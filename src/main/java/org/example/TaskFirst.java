@@ -20,7 +20,9 @@ public class TaskFirst {
             System.out.println("Успешно подключено к базе данных!");
 
             // Создание SQL-запроса для получения среднего количества покупок в месяц для каждого курса за 2018 год
-            String sql = "SELECT course_name, COUNT(*) / COUNT(DISTINCT MONTH(subscription_date)) AS average_purchases " +
+            String sql = "SELECT course_name, COUNT(*) AS total_purchases, " +
+                    "MIN(MONTH(subscription_date)) AS first_month, " +
+                    "MAX(MONTH(subscription_date)) AS last_month " +
                     "FROM PurchaseList " +
                     "WHERE YEAR(subscription_date) = 2018 " +
                     "GROUP BY course_name";
@@ -32,8 +34,15 @@ public class TaskFirst {
             // Обработка результатов
             while (resultSet.next()) {
                 String courseName = resultSet.getString("course_name");
-                double averagePurchases = resultSet.getDouble("average_purchases");
-                System.out.printf("Курс: %s, Среднее количество покупок в месяц: %.2f%n", courseName, averagePurchases);
+                int totalPurchases = resultSet.getInt("total_purchases");
+                int firstMonth = resultSet.getInt("first_month");
+                int lastMonth = resultSet.getInt("last_month");
+
+                int months = lastMonth - firstMonth + 1;
+                double averagePurchases = (double) totalPurchases / months;
+
+                System.out.printf("Курс: %s, ..... Всего покупок: %d, ..... Первый месяц: %d, ..... Последний месяц: %d, ..... Среднее количество покупок в месяц: %.2f%n",
+                        courseName, totalPurchases, firstMonth, lastMonth, averagePurchases);
             }
 
         } catch (SQLException e) {
